@@ -19,6 +19,7 @@ var pin = func(class string) core.Bucket {
 
 func init() {
 	//
+	// 可改造成发送通知的机器人
 	core.Server.POST("/cookie", func(c *gin.Context) {
 		cookie := c.PostForm("ck")
 		qq := c.PostForm("qq")
