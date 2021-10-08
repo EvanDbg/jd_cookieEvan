@@ -63,7 +63,7 @@ func init() {
 			if err := qinglong.AddEnv(qinglong.Env{
 				Name:  "JD_COOKIE",
 				Value: value,
-				Remarks: s.GetUserID(),
+				Remarks: strconv.Itoa(s.GetUserID()),
 			}); err != nil {
 				result.Message = err.Error()
 				c.JSON(200, result)
@@ -167,7 +167,7 @@ func init() {
 						if err := qinglong.AddEnv(qinglong.Env{
 							Name:  "JD_COOKIE",
 							Value: value,
-							Remarks: s.GetUserID(),
+							Remarks: strconv.Itoa(s.GetUserID()),
 						}); err != nil {
 							s.Reply(err)
 							continue
@@ -239,7 +239,7 @@ func init() {
 					qinglong.AddEnv(qinglong.Env{
 						Name:  "JD_COOKIE",
 						Value: value2,
-						Remarks: s.GetUserID(),
+						Remarks: strconv.Itoa(s.GetUserID()),
 					})
 				} else {
 					envCK.Value = value2
@@ -251,7 +251,7 @@ func init() {
 					if err := qinglong.AddEnv(qinglong.Env{
 						Name:  "JD_WSCK",
 						Value: value,
-						Remarks: s.GetUserID(),
+						Remarks: strconv.Itoa(s.GetUserID()),
 					}); err != nil {
 						return err
 					}
