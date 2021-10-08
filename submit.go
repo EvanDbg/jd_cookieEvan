@@ -20,8 +20,8 @@ var pin = func(class string) core.Bucket {
 func init() {
 	//
 	core.Server.POST("/cookie", func(c *gin.Context) {
-		cookie := c.Query("ck")
-		qq := c.Query("qq")
+		cookie := c.PostForm("ck")
+		qq := c.PostForm("qq")
 		ck := &JdCookie{
 			PtKey: core.FetchCookieValue(cookie, "pt_key"),
 			PtPin: core.FetchCookieValue(cookie, "pt_pin"),
@@ -64,7 +64,7 @@ func init() {
 			if err := qinglong.AddEnv(qinglong.Env{
 				Name:  "JD_COOKIE",
 				Value: value,
-				Remarks: qq,
+				Remarks: "QQ" + qq + ";",
 			}); err != nil {
 				result.Message = err.Error()
 				c.JSON(200, result)
