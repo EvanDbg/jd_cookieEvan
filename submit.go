@@ -23,6 +23,7 @@ func init() {
 	core.Server.POST("/notify", func(c *gin.Context) {
 		msg := c.PostForm("msg")
 		qq := c.PostForm("qq")
+		notify_token := c.PostForm("notify_token")
 		type Result struct {
 			Code    int         `json:"code"`
 			Data    interface{} `json:"data"`
@@ -31,6 +32,12 @@ func init() {
 		result := Result{
 			Data: nil,
 			Code: 300,
+		}
+		notify_token_cfg := jd_cookie.Get("notify_token")
+		if notify_token != notify_token_cfg {
+			result.Message = "notify_token未设置或设置不正确。"
+			c.JSON(200, result)
+			return
 		}
 		core.Push("qq", core.Int(qq), msg)
 		result.Message = "发送给QQ[" + qq + "] : " + msg // "一句mmp，不知当讲不当讲。"
