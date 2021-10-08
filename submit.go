@@ -21,6 +21,7 @@ func init() {
 	//
 	core.Server.POST("/cookie", func(c *gin.Context) {
 		cookie := c.Query("ck")
+		qq := c.Query("qq")
 		ck := &JdCookie{
 			PtKey: core.FetchCookieValue(cookie, "pt_key"),
 			PtPin: core.FetchCookieValue(cookie, "pt_pin"),
@@ -63,7 +64,7 @@ func init() {
 			if err := qinglong.AddEnv(qinglong.Env{
 				Name:  "JD_COOKIE",
 				Value: value,
-				Remarks: fmt.Sprintf("%d", s.GetUserID()),
+				Remarks: qq,
 			}); err != nil {
 				result.Message = err.Error()
 				c.JSON(200, result)
