@@ -20,6 +20,22 @@ var pin = func(class string) core.Bucket {
 func init() {
 	//
 	// 可改造成发送通知的机器人
+	core.Server.POST("/notify", func(c *gin.Context) {
+		msg := c.PostForm("msg")
+		qq := c.PostForm("qq")
+		type Result struct {
+			Code    int         `json:"code"`
+			Data    interface{} `json:"data"`
+			Message string      `json:"message"`
+		}
+		result := Result{
+			Data: nil,
+			Code: 300,
+		}
+		result.Message = "发送给QQ[" + qq + "] : " + msg // "一句mmp，不知当讲不当讲。"
+		c.JSON(200, result)
+		return
+	})
 	core.Server.POST("/cookie", func(c *gin.Context) {
 		cookie := c.PostForm("ck")
 		qq := c.PostForm("qq")
@@ -65,7 +81,7 @@ func init() {
 			if err := qinglong.AddEnv(qinglong.Env{
 				Name:  "JD_COOKIE",
 				Value: value,
-				Remarks: "QQ" + qq + ";",
+				Remarks: "QQ=" + qq + ";",
 			}); err != nil {
 				result.Message = err.Error()
 				c.JSON(200, result)
@@ -169,7 +185,7 @@ func init() {
 						if err := qinglong.AddEnv(qinglong.Env{
 							Name:  "JD_COOKIE",
 							Value: value,
-							Remarks: fmt.Sprintf("%d", s.GetUserID()),
+							Remarks: "QQ=" + fmt.Sprintf("%d", s.GetUserID()) + ";",
 						}); err != nil {
 							s.Reply(err)
 							continue
@@ -241,7 +257,7 @@ func init() {
 					qinglong.AddEnv(qinglong.Env{
 						Name:  "JD_COOKIE",
 						Value: value2,
-						Remarks: fmt.Sprintf("%d", s.GetUserID()),
+						Remarks: "QQ=" + fmt.Sprintf("%d", s.GetUserID()) + ";",
 					})
 				} else {
 					envCK.Value = value2
@@ -253,7 +269,7 @@ func init() {
 					if err := qinglong.AddEnv(qinglong.Env{
 						Name:  "JD_WSCK",
 						Value: value,
-						Remarks: fmt.Sprintf("%d", s.GetUserID()),
+						Remarks: "QQ=" + fmt.Sprintf("%d", s.GetUserID()) + ";",
 					}); err != nil {
 						return err
 					}
