@@ -24,7 +24,7 @@ func init() {
 		access_token := c.Query("access_token")
 		message := c.PostForm("message")
 		type Result struct {
-			Code    int         `json:"retCode"`
+			Code    int         `json:"retcode"`
 			Data    interface{} `json:"data"`
 			Message string      `json:"message"`
 			ErrMsg  string      `json:"errmsg"`
@@ -42,7 +42,7 @@ func init() {
 		}
 		core.Push("qq", core.Int(user_id), message)
 		result.Message = "发送给QQ[" + user_id + "] : " + message // "一句mmp，不知当讲不当讲。"
-		c.JSON(0, result)
+		c.JSON(200, result)
 		return
 	})
 	// 可改造成发送通知的机器人
