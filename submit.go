@@ -19,6 +19,34 @@ var pin = func(class string) core.Bucket {
 
 func init() {
 	// 
+	core.Server.POST("/send_group_msg", func(c *gin.Context) {
+		group_id := c.Query("group_id")
+		access_token := c.Query("access_token")
+		message := c.PostForm("message")
+		type Result struct {
+			Code    int         `json:"retcode"`
+			Data    interface{} `json:"data"`
+			Message string      `json:"message"`
+			ErrMsg  string      `json:"errmsg"`
+		}
+		result := Result{
+			Data: nil,
+			Code: 0,
+		}
+		notify_token_cfg := jd_cookie.Get("access_token")
+		if access_token != notify_token_cfg {
+			result.ErrMsg = "notify_token未设置或设置不正确。"
+			result.Code = 100
+			c.JSON(200, result)
+			return
+		}
+		if push, ok := core.GroupPushs["qq"]; ok {
+			push(int(group_id), int(0), message)
+		}
+		result.Message = "发送给QQ群[" + user_id + "] : " + message // "一句mmp，不知当讲不当讲。"
+		c.JSON(200, result)
+		return
+	})
 	core.Server.POST("/send_private_msg", func(c *gin.Context) {
 		user_id := c.Query("user_id")
 		access_token := c.Query("access_token")
