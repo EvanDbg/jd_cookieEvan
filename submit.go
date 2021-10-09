@@ -41,9 +41,9 @@ func init() {
 			return
 		}
 		if push, ok := core.GroupPushs["qq"]; ok {
-			push(int(group_id), int(0), message)
+			push(core.Int(group_id), int(0), message)
 		}
-		result.Message = "发送给QQ群[" + user_id + "] : " + message // "一句mmp，不知当讲不当讲。"
+		result.Message = "发送给QQ群[" + group_id + "] : " + message // "一句mmp，不知当讲不当讲。"
 		c.JSON(200, result)
 		return
 	})
