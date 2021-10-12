@@ -40,7 +40,9 @@ func init() {
 			c.JSON(200, result)
 			return
 		}
-		core.Push("wx", user_id, message)
+		if push, ok := core.GroupPushs["wx"]; ok {
+			push(user_id, message)
+		}
 		result.Message = "发送给WX[" + user_id + "] : " + message // "一句mmp，不知当讲不当讲。"
 		c.JSON(200, result)
 		return
