@@ -18,6 +18,7 @@ var pin = func(class string) core.Bucket {
 }
 
 func init() {
+	// 
 	core.Server.POST("/send_wx_msg", func(c *gin.Context) {
 		user_id := c.Query("user_id")
 		access_token := c.Query("access_token")
@@ -44,7 +45,6 @@ func init() {
 		c.JSON(200, result)
 		return
 	})
-	// 
 	core.Server.POST("/send_group_msg", func(c *gin.Context) {
 		group_id := c.Query("group_id")
 		access_token := c.Query("access_token")
