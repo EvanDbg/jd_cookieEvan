@@ -130,7 +130,7 @@ func init() {
 			return
 		}
 		core.Push("qq", core.Int(user_id), message)
-		result.Message = "发送给QQ[" + user_id + "] : " + message // "一句mmp，不知当讲不当讲。"
+		result.Message = "发送给QQ[" + user_id + "] : " + &json // "一句mmp，不知当讲不当讲。"
 		c.JSON(200, result)
 		return
 	})
