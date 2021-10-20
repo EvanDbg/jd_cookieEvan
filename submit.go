@@ -114,7 +114,7 @@ func init() {
 		
 		json := make(map[string]interface{})
 		c.BindJSON(&json)
-		message := fmt.Println("string", json["message"].(string))
+		message := fmt.Sprintf("%s", json["message"]) // fmt.Println("string", json["message"].(string))
 		
 		type Result struct {
 			Code    int         `json:"retcode"`
