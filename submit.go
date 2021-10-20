@@ -108,13 +108,13 @@ func init() {
 		user_id := c.Query("user_id")
 		access_token := c.Query("access_token")
 		
-		b, _ := c.GetRawData() 
-		var m map[string]interface{}
-		_ = json.Unmarshal(b, &m)
+// 		b, _ := c.GetRawData() 
+// 		var m map[string]interface{}
+// 		_ = json.Unmarshal(b, &m)
 		
-// 		json := make(map[string]interface{})
-// 		c.BindJSON(&json)
-		message := m["message"]
+		json := make(map[string]interface{})
+		c.BindJSON(&json)
+		message := json["message"]
 		
 		type Result struct {
 			Code    int         `json:"retcode"`
