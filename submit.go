@@ -107,7 +107,11 @@ func init() {
 	core.Server.POST("/send_private_msg", func(c *gin.Context) {
 		user_id := c.Query("user_id")
 		access_token := c.Query("access_token")
-		message := c.PostForm("message")
+		
+		json := make(map[string]interface{})
+		c.BindJSON(&json)
+		message := json["message"]
+		
 		type Result struct {
 			Code    int         `json:"retcode"`
 			Data    interface{} `json:"data"`
