@@ -22,7 +22,11 @@ func init() {
 	core.Server.POST("/send_wx_msg", func(c *gin.Context) {
 		user_id := c.Query("user_id")
 		access_token := c.Query("access_token")
-		message := c.PostForm("message")
+		
+		json := make(map[string]interface{})
+		c.BindJSON(&json)
+		message := fmt.Sprintf("%s", json["message"])
+		
 		type Result struct {
 			Code    int         `json:"retcode"`
 			Data    interface{} `json:"data"`
@@ -51,7 +55,11 @@ func init() {
 		group_id := c.Query("group_id")
 		user_id := c.Query("user_id")
 		access_token := c.Query("access_token")
-		message := c.PostForm("message")
+		
+		json := make(map[string]interface{})
+		c.BindJSON(&json)
+		message := fmt.Sprintf("%s", json["message"])
+		
 		type Result struct {
 			Code    int         `json:"retcode"`
 			Data    interface{} `json:"data"`
@@ -79,7 +87,11 @@ func init() {
 	core.Server.POST("/send_group_msg", func(c *gin.Context) {
 		group_id := c.Query("group_id")
 		access_token := c.Query("access_token")
-		message := c.PostForm("message")
+		
+		json := make(map[string]interface{})
+		c.BindJSON(&json)
+		message := fmt.Sprintf("%s", json["message"])
+		
 		type Result struct {
 			Code    int         `json:"retcode"`
 			Data    interface{} `json:"data"`
@@ -107,14 +119,10 @@ func init() {
 	core.Server.POST("/send_private_msg", func(c *gin.Context) {
 		user_id := c.Query("user_id")
 		access_token := c.Query("access_token")
-		
-// 		b, _ := c.GetRawData() 
-// 		var m map[string]interface{}
-// 		_ = json.Unmarshal(b, &m)
-		
+
 		json := make(map[string]interface{})
 		c.BindJSON(&json)
-		message := fmt.Sprintf("%s", json["message"]) // fmt.Println("string", json["message"].(string))
+		message := fmt.Sprintf("%s", json["message"])
 		
 		type Result struct {
 			Code    int         `json:"retcode"`
