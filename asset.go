@@ -406,9 +406,10 @@ func init() {
 
 func LimitJdCookie(cks []JdCookie, a string) []JdCookie {
 	ncks := []JdCookie{}
+	number := len(cks)
 	if s := strings.Split(a, "-"); len(s) == 2 {
 		for i := range cks {
-			if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
+			if i+1 >= Int(s[0])%(number+1) && i+1 <= Int(s[1])%(number+1) {
 				ncks = append(ncks, cks[i])
 			}
 		}
@@ -416,7 +417,7 @@ func LimitJdCookie(cks []JdCookie, a string) []JdCookie {
 		xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
 		for i := range cks {
 			for _, x := range xx {
-				if fmt.Sprint(i+1) == x[1] {
+				if i+1 == Int(x[1])%(number+1) {
 					ncks = append(ncks, cks[i])
 				}
 			}
