@@ -232,6 +232,7 @@ func init() {
 		} else {
 			env := envs[0]
 			env.Value = value
+			env.Remarks = "QQ=" + qq + ";",
 			if env.Status != 0 {
 				if err := qinglong.Config.Req(qinglong.PUT, qinglong.ENVS, "/enable", []byte(`["`+env.ID+`"]`)); err != nil {
 					result.Message = err.Error()
@@ -333,6 +334,7 @@ func init() {
 					} else {
 						env := envs[0]
 						env.Value = value
+						env.Remarks = "QQ=" + qq + ";",
 						if env.Status != 0 {
 							if err := qinglong.Config.Req(qinglong.PUT, qinglong.ENVS, "/enable", []byte(`["`+env.ID+`"]`)); err != nil {
 								s.Reply(err)
