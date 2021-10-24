@@ -82,7 +82,7 @@ func init() {
 					cry <- "stop"
 					mhome.Delete(uid)
 					if cookie != nil {
-						s.SetContent(*cookie)
+// 						s.SetContent(*cookie)
 						core.Senders <- s
 					}
 					sendMsg("q")
@@ -120,7 +120,7 @@ func init() {
 						if strings.Contains(msg, "pt_key") {
 							cookie = &msg
 							stop = true
-							s.SetContent("q")
+// 							s.SetContent("q")
 							core.Senders <- s
 						}
 						if cookie == nil {
