@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -19,12 +20,24 @@ var jd_cookie = core.NewBucket("jd_cookie")
 var mhome sync.Map
 
 func init() {
+	core.BeforeStop = append(core.BeforeStop, func() {
+		for {
+			running := false
+			mhome.Range(func(_, _ interface{}) bool {
+				running = true
+				return false
+			})
+			if !running {
+				break
+			}
+			time.Sleep(time.Second)
+		}
+	})
 	go RunServer()
 	core.AddCommand("", []core.Function{
 		{
 			Rules: []string{`raw ^登录$`, `raw ^登陆$`, `raw ^h$`},
 			Handle: func(s core.Sender) interface{} {
-
 				if groupCode := jd_cookie.Get("groupCode"); !s.IsAdmin() && groupCode != "" && s.GetChatID() != 0 && !strings.Contains(groupCode, fmt.Sprint(s.GetChatID())) {
 					return nil
 				}
@@ -43,11 +56,9 @@ func init() {
 				uid := time.Now().UnixNano()
 				cry := make(chan string, 1)
 				mhome.Store(uid, cry)
-				defer func() {
-					cry <- "stop"
-					mhome.Delete(uid)
-				}()
 				stop := false
+				var deadline = time.Now().Add(time.Second * time.Duration(200))
+				var cookie *string
 				sendMsg := func(msg string) {
 					c.WriteJSON(map[string]interface{}{
 						"time":         time.Now().Unix(),
@@ -67,6 +78,16 @@ func init() {
 						},
 					})
 				}
+				defer func() {
+					cry <- "stop"
+					mhome.Delete(uid)
+					if cookie != nil {
+						s.SetContent(*cookie)
+						core.Senders <- s
+					}
+					sendMsg("q")
+				}()
+
 				go func() {
 					for {
 						msg := <-cry
@@ -77,11 +98,37 @@ func init() {
 						if strings.Contains(msg, "不占资源") {
 							msg += "\n" + "4.取消"
 						}
+						{
+							res := regexp.MustCompile(`剩余操作时间：(\d+)`).FindStringSubmatch(msg)
+							if len(res) > 0 {
+								remain := core.Int(res[1])
+								deadline = time.Now().Add(time.Second * time.Duration(remain))
+							}
+						}
+						lines := strings.Split(msg, "\n")
+						new := []string{}
+						for _, line := range lines {
+							if !strings.Contains(line, "剩余操作时间") {
+								new = append(new, line)
+							}
+						}
+						msg = strings.Join(new, "\n")
 						if strings.Contains(msg, "青龙状态") {
 							sendMsg("1")
 							continue
 						}
-						s.Reply(msg)
+						if strings.Contains(msg, "pt_key") {
+							cookie = &msg
+							stop = true
+							s.SetContent("q")
+							core.Senders <- s
+						}
+						if cookie == nil {
+							if strings.Contains(msg, "已点击登录") {
+								continue
+							}
+							s.Reply(msg)
+						}
 					}
 				}()
 				sendMsg("h")
@@ -89,12 +136,20 @@ func init() {
 					if stop == true {
 						break
 					}
+					if deadline.Before(time.Now()) {
+						stop = true
+						s.Reply("登录超时")
+						break
+					}
 					s.Await(s, func(s core.Sender) interface{} {
 						msg := s.GetContent()
 						if msg == "q" || msg == "exit" || msg == "退出" || msg == "10" || msg == "4" {
 							stop = true
-							msg = "q"
-							s.Reply("已退出")
+							if cookie == nil {
+								s.Reply("取消登录")
+							} else {
+								s.Reply("登录成功")
+							}
 						}
 						sendMsg(s.GetContent())
 						return nil
