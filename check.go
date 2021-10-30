@@ -67,6 +67,16 @@ func init() {
 						continue
 					}
 					s.Reply(fmt.Sprintf("%s,JD_COOKIE已失效。", pin), core.E, core.N)
+					for _, tp := range []string{
+						"qq", "tg",
+					} {
+						core.Bucket("pin" + strings.ToUpper(tp)).Foreach(func(k, v []byte) error {
+							if string(k) == pin && pin != "" {
+								core.Push(tp, core.Int(string(v)), fmt.Sprintf("%s,JD_COOKIE已失效。", pin))
+							}
+							return nil
+						})
+					}
 					if err := qinglong.Config.Req(qinglong.PUT, qinglong.ENVS, "/disable", []byte(`["`+env.ID+`"]`)); err != nil {
 						s.Reply(fmt.Sprintf("%s,JD_COOKIE禁用失败。%v", pin, err), core.E)
 					} else {
