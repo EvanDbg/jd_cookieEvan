@@ -91,9 +91,9 @@ func init() {
 				data, _ := httplib.Get(addr + "/api/Config").Bytes()
 				tabcount, _ := jsonparser.GetInt(data, "data", "tabcount")
 				if tabcount == 0 {
-					return "若兰很忙，请稍后再试。"
+					return "EVAN很忙，请稍后再试。"
 				}
-				s.Reply("若兰为您服务，请输入11位手机号：(输入“q”随时退出会话。)")
+				s.Reply("EVAN为您服务，请输入11位手机号：(输入“q”随时退出会话。)")
 				cancel := false
 				phone := ""
 				s.Await(s, func(s core.Sender) interface{} {
@@ -125,7 +125,8 @@ func init() {
 					s.Reply(message)
 				}
 				if !success && status == 666 {
-					s.Reply("正在进行滑块验证...")
+					s.Reply("正在进行滑块验证...
+（一分钟内未收到验证码，输入”q“退出会话，重头来过）")
 					req = httplib.Post(addr + "/api/AutoCaptcha")
 					req.SetTimeout(time.Second*60, time.Second*60)
 					req.Header("content-type", "application/json")
@@ -139,7 +140,8 @@ func init() {
 						return nil
 					}
 				}
-				s.Reply("请输入6位验证码：")
+				s.Reply("请输入6位验证码：
+（一分钟内未收到验证码，输入”q“退出会话，重头来过）")
 				code := ""
 				s.Await(s, func(s core.Sender) interface{} {
 					ct := s.GetContent()
