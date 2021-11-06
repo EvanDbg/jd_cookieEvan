@@ -93,7 +93,9 @@ func init() {
 				if tabcount == 0 {
 					return "EVAN很忙，请稍后再试。"
 				}
-				s.Reply("EVAN为您服务，请输入11位手机号：(输入“q”随时退出会话。)")
+				s.Reply(`EVAN为您服务，请输入11位手机号：
+(输入“q”随时退出会话。)
+如多次失败请登录网页手动操作：http://o3.yfyf.fun:6776`)
 				cancel := false
 				phone := ""
 				s.Await(s, func(s core.Sender) interface{} {
