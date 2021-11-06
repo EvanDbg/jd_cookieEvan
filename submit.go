@@ -322,7 +322,7 @@ func init() {
 						if err := qinglong.AddEnv(qinglong.Env{
 							Name:  "JD_COOKIE",
 							Value: value,
-							Remarks: "QQ=" + fmt.Sprintf("%d", s.GetUserID()) + ";",
+							Remarks: "QQ=" + fmt.Sprintf("%s", s.GetUserID()) + ";",
 						}); err != nil {
 							s.Reply(err)
 							continue
@@ -334,7 +334,7 @@ func init() {
 					} else {
 						env := envs[0]
 						env.Value = value
-						env.Remarks = "QQ=" + fmt.Sprintf("%d", s.GetUserID()) + ";"
+						env.Remarks = "QQ=" + fmt.Sprintf("%s", s.GetUserID()) + ";"
 						if env.Status != 0 {
 							if err := qinglong.Config.Req(qinglong.PUT, qinglong.ENVS, "/enable", []byte(`["`+env.ID+`"]`)); err != nil {
 								s.Reply(err)
@@ -395,7 +395,7 @@ func init() {
 					qinglong.AddEnv(qinglong.Env{
 						Name:  "JD_COOKIE",
 						Value: value2,
-						Remarks: "QQ=" + fmt.Sprintf("%d", s.GetUserID()) + ";",
+						Remarks: "QQ=" + fmt.Sprintf("%s", s.GetUserID()) + ";",
 					})
 				} else {
 					if envCK.Status != 0 {
@@ -409,7 +409,7 @@ func init() {
 					if err := qinglong.AddEnv(qinglong.Env{
 						Name:  "JD_WSCK",
 						Value: value,
-						Remarks: "QQ=" + fmt.Sprintf("%d", s.GetUserID()) + ";",
+						Remarks: "QQ=" + fmt.Sprintf("%s", s.GetUserID()) + ";",
 					}); err != nil {
 						return err
 					}
