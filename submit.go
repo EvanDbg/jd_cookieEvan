@@ -256,7 +256,30 @@ func init() {
 	})
 	core.AddCommand("jd", []core.Function{
 		{
-			Rules: []string{`unbind ?`},
+			Rules: []string{"send ? ?"},
+			Admin: true,
+			Handle: func(s core.Sender) interface{} {
+				user_pin := s.Get()
+				msg := s.Get(1)
+				for _, tp := range []string{
+					"qq", "tg", "wx",
+				} {
+					core.Bucket("pin" + strings.ToUpper(tp)).Foreach(func(k, v []byte) error {
+						pt_pin := string(k)
+						user_id := string(v)
+						if pt_pin == user_pin || user_pin == "all" {
+							if push, ok := core.Pushs[tp]; ok {
+								push(user_id, msg)
+							}
+						}
+						return nil
+					})
+				}
+				return "发送完成"
+			},
+		},
+		{
+			Rules: []string{`unbind`},
 			Handle: func(s core.Sender) interface{} {
 				s.Disappear(time.Second * 40)
 				envs, err := qinglong.GetEnvs("JD_COOKIE")

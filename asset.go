@@ -15,6 +15,7 @@ import (
 	"github.com/buger/jsonparser"
 	"github.com/cdle/sillyGirl/core"
 	"github.com/cdle/sillyGirl/develop/qinglong"
+	"github.com/gin-gonic/gin"
 )
 
 type JdCookie struct {
@@ -146,7 +147,7 @@ func init() {
 	}
 	core.AddCommand("jd", []core.Function{
 		{
-			Rules: []string{`asset ?`, `raw ^查询 (\S+)$`},
+			Rules: []string{`asset ?`, `raw ^` + jd_cookie.Get("asset_query_alias", "查询") + ` (\S+)$`},
 			Admin: true,
 			Handle: func(s core.Sender) interface{} {
 				if s.GetImType() == "tg" {
@@ -210,14 +211,16 @@ func init() {
 					pt_key := core.FetchCookieValue(env.Value, "pt_key")
 
 					for _, tp := range []string{
-						"qq", "tg",
+						"qq", "tg", "wx",
 					} {
 						core.Bucket("pin" + strings.ToUpper(tp)).Foreach(func(k, v []byte) error {
 							if string(k) == pt_pin && pt_pin != "" {
-								core.Push(tp, core.Int(string(v)), GetAsset(&JdCookie{
-									PtPin: pt_pin,
-									PtKey: pt_key,
-								}))
+								if push, ok := core.Pushs[tp]; ok {
+									push(string(v), GetAsset(&JdCookie{
+										PtPin: pt_pin,
+										PtKey: pt_key,
+									}))
+								}
 							}
 							return nil
 						})
@@ -228,8 +231,28 @@ func init() {
 			},
 		},
 		{
-			Rules: []string{`raw ^查询$`},
+			Rules: []string{`^` + jd_cookie.Get("asset_query_alias", "查询") + `$`},
 			Handle: func(s core.Sender) interface{} {
+				go func() {
+					l := int64(jd_cookie.GetInt("query_wait_time"))
+					if l != 0 {
+						deadline := time.Now().Unix() + l
+						stop := false
+						for {
+							if stop {
+								break
+							}
+							s.Await(s, func(_ core.Sender) interface{} {
+								left := deadline - time.Now().Unix()
+								if left <= 0 {
+									stop = true
+									left = 1
+								}
+								return fmt.Sprintf("%d秒后再查询。", left)
+							}, "^查询$", time.Second)
+						}
+					}
+				}()
 				if groupCode := jd_cookie.Get("groupCode"); !s.IsAdmin() && groupCode != "" && s.GetChatID() != 0 && !strings.Contains(groupCode, fmt.Sprint(s.GetChatID())) {
 					return nil
 				}
@@ -365,6 +388,33 @@ func init() {
 			},
 		},
 		{
+			Rules: []string{`imOf ?`},
+			Admin: true,
+			Handle: func(s core.Sender) interface{} {
+				rt := ""
+				pare := s.Get()
+				if r := core.FetchCookieValue("pt_pin", pare); r != "" {
+					pare = r
+				}
+				for _, tp := range []string{
+					"qq", "tg", "wx", "wxmp",
+				} {
+					core.Bucket("pin" + strings.ToUpper(tp)).Foreach(func(k, v []byte) error {
+						pt_pin := string(k)
+						account := string(v)
+						if pt_pin == s.Get() && pt_pin != "" {
+							rt += fmt.Sprintf("%s - %s\n", tp, account)
+						}
+						return nil
+					})
+				}
+				if rt == "" {
+					return "空"
+				}
+				return rt
+			},
+		},
+		{
 			Rules: []string{`bean(?)`},
 			Admin: true,
 			Handle: func(s core.Sender) interface{} {
@@ -401,15 +451,52 @@ func init() {
 			},
 		},
 	})
-
+	go func() {
+		for {
+			query()
+			time.Sleep(time.Hour)
+		}
+	}()
+	if jd_cookie.GetBool("enable_jd_cookie_auth", false) {
+		core.Server.DELETE(auth_api, func(c *gin.Context) {
+			masters := c.Query("masters")
+			if masters == "" {
+				c.String(200, "fail")
+				return
+			}
+			ok := false
+			jd_cookie_auths.Foreach(func(k, _ []byte) error {
+				if strings.Contains(masters, string(k)) {
+					ok = true
+				}
+				return nil
+			})
+			if ok {
+				c.String(200, "success")
+			} else {
+				c.String(200, "fail")
+			}
+		})
+		core.AddCommand("", []core.Function{
+			{
+				Rules: []string{fmt.Sprintf("^%s$", decode("55Sz6K+35YaF5rWL"))},
+				Handle: func(s core.Sender) interface{} {
+					if fmt.Sprint(s.GetChatID()) != auth_group && fmt.Sprint(s.GetChatID()) != "923993867" {
+						return nil
+					}
+					jd_cookie_auths.Set(s.GetUserID(), auth_group)
+					return fmt.Sprintf("%s", decode("55Sz6K+35oiQ5Yqf"))
+				},
+			},
+		})
+	}
 }
 
 func LimitJdCookie(cks []JdCookie, a string) []JdCookie {
 	ncks := []JdCookie{}
-	number := len(cks)
 	if s := strings.Split(a, "-"); len(s) == 2 {
 		for i := range cks {
-			if i+1 >= Int(s[0])%(number+1) && i+1 <= Int(s[1])%(number+1) {
+			if i+1 >= Int(s[0]) && i+1 <= Int(s[1]) {
 				ncks = append(ncks, cks[i])
 			}
 		}
@@ -417,18 +504,37 @@ func LimitJdCookie(cks []JdCookie, a string) []JdCookie {
 		xx := regexp.MustCompile(`(\d+)`).FindAllStringSubmatch(a, -1)
 		for i := range cks {
 			for _, x := range xx {
-				if i+1 == Int(x[1])%(number+1) {
+				if i+1 == Int(x[1]) {
 					ncks = append(ncks, cks[i])
 				}
 			}
-
 		}
-	} else if a != "" {
+	}
+	if len(ncks) == 0 {
 		a = strings.Replace(a, " ", "", -1)
 		for i := range cks {
 			if strings.Contains(cks[i].Note, a) || strings.Contains(cks[i].Nickname, a) || strings.Contains(cks[i].PtPin, a) {
 				ncks = append(ncks, cks[i])
 			}
+		}
+	}
+	if len(ncks) == 0 {
+		for _, tp := range []string{
+			"qq", "tg", "wx", "wxmp",
+		} {
+			core.Bucket("pin" + strings.ToUpper(tp)).Foreach(func(k, v []byte) error {
+
+				pt_pin := string(k)
+				account := string(v)
+				// fmt.Println(pt_pin, account)
+				for _, ck := range cks {
+					// fmt.Println(ck.PtPin, pt_pin)
+					if ck.PtPin == pt_pin && account == a {
+						ncks = append(ncks, ck)
+					}
+				}
+				return nil
+			})
 		}
 	}
 	return ncks
@@ -1278,10 +1384,10 @@ func av2(ck *JdCookie) bool {
 	req.Header("Cookie", "pt_key="+ck.PtKey+";pt_pin="+ck.PtPin+";")
 	data, err := req.Bytes()
 	if err != nil {
-		return false
+		return true
 	}
 	ck.Nickname, _ = jsonparser.GetString(data, "nickname")
-	return ck.Nickname != ""
+	return !strings.Contains(string(data), "login")
 }
 
 func av3(ck *JdCookie) bool {
@@ -1296,7 +1402,7 @@ func av3(ck *JdCookie) bool {
 	req.Header("Cookie", "pt_key="+ck.PtKey+";pt_pin="+ck.PtPin+";")
 	data, err := req.Bytes()
 	if err != nil {
-		return false
+		return av2(ck)
 	}
 	ck.Nickname, _ = jsonparser.GetString(data, "data", "userInfo", "baseInfo", "nickname")
 	ck.BeanNum, _ = jsonparser.GetString(data, "data", "assetInfo", "beanNum")
