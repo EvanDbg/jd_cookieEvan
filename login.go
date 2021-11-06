@@ -166,6 +166,8 @@ func init() {
 					s = s.Copy()
 					s.SetContent(string(data))
 					core.Senders <- s
+					s.Reply(`欢迎参加EVAN带你挂机！
+有问题请联系EVAN`)
 				} else {
 					if message != "" {
 						return message
