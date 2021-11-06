@@ -125,8 +125,8 @@ func init() {
 					s.Reply(message)
 				}
 				if !success && status == 666 {
-					s.Reply("正在进行滑块验证...
-（一分钟内未收到验证码，输入”q“退出会话，重头来过）")
+					s.Reply(`正在进行滑块验证...
+（一分钟内未收到验证码，输入”q“退出会话，重头来过）`)
 					req = httplib.Post(addr + "/api/AutoCaptcha")
 					req.SetTimeout(time.Second*60, time.Second*60)
 					req.Header("content-type", "application/json")
@@ -140,8 +140,8 @@ func init() {
 						return nil
 					}
 				}
-				s.Reply("请输入6位验证码：
-（一分钟内未收到验证码，输入”q“退出会话，重头来过）")
+				s.Reply(`请输入6位验证码：
+（一分钟内未收到验证码，输入”q“退出会话，重头来过）`)
 				code := ""
 				s.Await(s, func(s core.Sender) interface{} {
 					ct := s.GetContent()
