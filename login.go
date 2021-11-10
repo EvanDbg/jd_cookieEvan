@@ -123,7 +123,7 @@ func init() {
 				data, err := req.Body(`{"Phone":"` + phone + `","qlkey":0}`).Bytes()
 				if err != nil {
 					s.Reply(err)
-					return
+					return nil
 				}
 				message, _ := jsonparser.GetString(data, "message")
 				success, _ := jsonparser.GetBoolean(data, "success")
@@ -142,7 +142,7 @@ func init() {
 						data, err := req.Body(`{"Phone":"` + phone + `"}`).Bytes()
 						if err != nil {
 							s.Reply(err)
-							return
+							return nil
 						}
 						message, _ := jsonparser.GetString(data, "message")
 						success, _ := jsonparser.GetBoolean(data, "success")
@@ -162,7 +162,7 @@ func init() {
 							break
 						}
 						s.Reply(message)
-						return
+						return nil
 					}
 				}
 				s.Reply(`请输入6位验证码：
@@ -181,7 +181,7 @@ func init() {
 					return nil
 				})
 				if cancel {
-					return
+					return nil
 				}
 				req = httplib.Post(addr + "/api/VerifyCode")
 				req.Header("content-type", "application/json")
